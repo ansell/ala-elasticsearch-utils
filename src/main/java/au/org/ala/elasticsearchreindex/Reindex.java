@@ -39,27 +39,53 @@ public class Reindex {
 
             // Reference:
             // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.10/java-rest-high-indices-exists.html
-            GetIndexRequest getRequest = new GetIndexRequest("example-filebeat-nginx-2020.11.18");
+            GetIndexRequest getSourceRequest = new GetIndexRequest("example-filebeat-nginx-2020.11.18");
 
-            if (client.indices().exists(getRequest, RequestOptions.DEFAULT)) {
-                DeleteIndexRequest deleteRequest = new DeleteIndexRequest(
+            if (client.indices().exists(getSourceRequest, RequestOptions.DEFAULT)) {
+                DeleteIndexRequest deleteSourceRequest = new DeleteIndexRequest(
                         "example-filebeat-nginx-2020.11.18");
-                client.indices().delete(deleteRequest, RequestOptions.DEFAULT);
+                client.indices().delete(deleteSourceRequest, RequestOptions.DEFAULT);
+            }
+
+            GetIndexRequest getDestinationRequest = new GetIndexRequest("example-filebeat-nginx-2020.11.18");
+
+            if (client.indices().exists(getDestinationRequest, RequestOptions.DEFAULT)) {
+                DeleteIndexRequest deleteDestinationRequest = new DeleteIndexRequest(
+                        "example-filebeat-www-2020.11.18");
+                client.indices().delete(deleteDestinationRequest, RequestOptions.DEFAULT);
             }
             // Reference:
             // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.10/java-rest-high-create-index.html
-            CreateIndexRequest createRequest = new CreateIndexRequest(
+            CreateIndexRequest createSourceRequest = new CreateIndexRequest(
                     "example-filebeat-nginx-2020.11.18");
 
-            createRequest.settings(Settings.builder().put("index.number_of_shards", 3)
+            createSourceRequest.settings(Settings.builder().put("index.number_of_shards", 3)
                     .put("index.number_of_replicas", 2));
 
-            createRequest.mapping("{\"properties\": { \"message\": { \"type\": \"text\" }, \"postDate\": { \"type\": \"date\" } } }", XContentType.JSON);
-            CreateIndexResponse createIndexResponse = client.indices().create(createRequest,
+            createSourceRequest.mapping("{\"properties\": { \"message\": { \"type\": \"text\" }, \"postDate\": { \"type\": \"text\" } } }", XContentType.JSON);
+
+            CreateIndexResponse createSourceIndexResponse = client.indices().create(createSourceRequest,
                     RequestOptions.DEFAULT);
-            System.out.println(String.format("Created index. acknowledged=%s shardsAcknowledged=%s",
-                    createIndexResponse.isAcknowledged(),
-                    createIndexResponse.isShardsAcknowledged()));
+            System.out.println(String.format("Created source index. acknowledged=%s shardsAcknowledged=%s",
+                    createSourceIndexResponse.isAcknowledged(),
+                    createSourceIndexResponse.isShardsAcknowledged()));
+
+            // Reference:
+            // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.10/java-rest-high-create-index.html
+            CreateIndexRequest createDestinationRequest = new CreateIndexRequest(
+                    "example-filebeat-www-2020.11.18");
+
+            createDestinationRequest.settings(Settings.builder().put("index.number_of_shards", 3)
+                    .put("index.number_of_replicas", 2));
+
+            // Example: Change the postDate type to date
+            createDestinationRequest.mapping("{\"properties\": { \"message\": { \"type\": \"text\" }, \"postDate\": { \"type\": \"date\" } } }", XContentType.JSON);
+
+            CreateIndexResponse createDestinationIndexResponse = client.indices().create(createDestinationRequest,
+                    RequestOptions.DEFAULT);
+            System.out.println(String.format("Created destination index. acknowledged=%s shardsAcknowledged=%s",
+                    createDestinationIndexResponse.isAcknowledged(),
+                    createDestinationIndexResponse.isShardsAcknowledged()));
 
             IndexRequest indexRequest = new IndexRequest("posts");
             indexRequest.id("1");
