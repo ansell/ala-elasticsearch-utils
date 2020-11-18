@@ -4,13 +4,23 @@
 package au.org.ala.elasticsearchreindex;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.tasks.TaskSubmissionResponse;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.VersionType;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.ReindexRequest;
@@ -28,15 +38,47 @@ public class Reindex {
                 RestClient.builder(new HttpHost("localhost", 9200, "http")));) {
 
             // Reference:
+            // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.10/java-rest-high-indices-exists.html
+            GetIndexRequest getRequest = new GetIndexRequest("example-filebeat-nginx-2020.11.18");
+
+            if (client.indices().exists(getRequest, RequestOptions.DEFAULT)) {
+                DeleteIndexRequest deleteRequest = new DeleteIndexRequest(
+                        "example-filebeat-nginx-2020.11.18");
+                client.indices().delete(deleteRequest, RequestOptions.DEFAULT);
+            }
+            // Reference:
+            // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.10/java-rest-high-create-index.html
+            CreateIndexRequest createRequest = new CreateIndexRequest(
+                    "example-filebeat-nginx-2020.11.18");
+
+            createRequest.settings(Settings.builder().put("index.number_of_shards", 3)
+                    .put("index.number_of_replicas", 2));
+
+            createRequest.mapping("{\"properties\": { \"message\": { \"type\": \"text\" }, \"postDate\": { \"type\": \"date\" } } }", XContentType.JSON);
+            CreateIndexResponse createIndexResponse = client.indices().create(createRequest,
+                    RequestOptions.DEFAULT);
+            System.out.println(String.format("Created index. acknowledged=%s shardsAcknowledged=%s",
+                    createIndexResponse.isAcknowledged(),
+                    createIndexResponse.isShardsAcknowledged()));
+
+            IndexRequest indexRequest = new IndexRequest("posts");
+            indexRequest.id("1");
+            String currentDateTime = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                    .format(LocalDateTime.now());
+            String jsonString = "{ \"postDate\": \"" + currentDateTime + "\", \"message\": \"Testing reindex process\" }";
+            System.out.println(jsonString);
+            indexRequest.source(jsonString, XContentType.JSON);
+
+            // Reference:
             // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.10/java-rest-high-document-reindex.html
-            ReindexRequest request = new ReindexRequest();
-            request.setSourceIndices("filebeat-nginx-2020.11.18");
-            request.setDestIndex("filebeat-www-2020.11.18");
-            request.setDestVersionType(VersionType.EXTERNAL);
-            request.setDestOpType("index");
+            ReindexRequest reindexRequest = new ReindexRequest();
+            reindexRequest.setSourceIndices("example-filebeat-nginx-2020.11.18");
+            reindexRequest.setDestIndex("example-filebeat-www-2020.11.18");
+            reindexRequest.setDestVersionType(VersionType.EXTERNAL);
+            reindexRequest.setDestOpType("index");
             // Very small sample size while creating the algorithm
-            request.setMaxDocs(10);
-            request.setRefresh(true);
+            reindexRequest.setMaxDocs(10);
+            reindexRequest.setRefresh(true);
 
             // ActionListener<BulkByScrollResponse> listener = new
             // ActionListener<BulkByScrollResponse>() {
@@ -53,10 +95,11 @@ public class Reindex {
             //
             // };
             // client.reindexAsync(request, RequestOptions.DEFAULT, listener );
-            TaskSubmissionResponse reindexSubmission = client.submitReindexTask(request,
+            TaskSubmissionResponse reindexSubmission = client.submitReindexTask(reindexRequest,
                     RequestOptions.DEFAULT);
             String taskId = reindexSubmission.getTask();
-            System.out.println(String.format("Task created with id: {}", taskId));
+            System.out.println(String.format("Task created with id: %s", taskId));
+
         }
     }
 
