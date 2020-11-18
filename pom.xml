@@ -1,0 +1,42 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>au.org.ala</groupId>
+		<artifactId>ala-parent-pom</artifactId>
+		<version>14</version>
+	</parent>
+
+	<groupId>au.org.ala</groupId>
+	<artifactId>ala-elasticsearch-reindex</artifactId>
+	<version>0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>ala-elasticsearch-reindex</name>
+	<url>https://www.ala.org.au</url>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/AtlasOfLivingAustralia/ala-elasticsearch-reindex/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Travis</system>
+		<url>https://travis-ci.com/AtlasOfLivingAustralia/ala-elasticsearch-reindex/</url>
+	</ciManagement>
+
+	<scm>
+		<connection>scm:git:git@github.com:AtlasOfLivingAustralia/ala-elasticsearch-reindex.git</connection>
+		<url>https://github.com/AtlasOfLivingAustralia/ala-elasticsearch-reindex</url>
+		<developerConnection>scm:git:git@github.com:AtlasOfLivingAustralia/ala-elasticsearch-reindex.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.elasticsearch.client</groupId>
+			<artifactId>elasticsearch-rest-high-level-client</artifactId>
+			<version>7.10.0</version>
+		</dependency>
+	</dependencies>
+</project>
