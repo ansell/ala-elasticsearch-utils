@@ -10,25 +10,25 @@
 	</parent>
 
 	<groupId>au.org.ala</groupId>
-	<artifactId>ala-elasticsearch-reindex</artifactId>
+	<artifactId>ala-elasticsearch-utils</artifactId>
 	<version>0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>ala-elasticsearch-reindex</name>
+	<name>ala-elasticsearch-utils</name>
 	<url>https://www.ala.org.au</url>
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/AtlasOfLivingAustralia/ala-elasticsearch-reindex/issues</url>
+		<url>https://github.com/AtlasOfLivingAustralia/ala-elasticsearch-utils/issues</url>
 	</issueManagement>
 	<ciManagement>
 		<system>Travis</system>
-		<url>https://travis-ci.com/AtlasOfLivingAustralia/ala-elasticsearch-reindex/</url>
+		<url>https://travis-ci.com/AtlasOfLivingAustralia/ala-elasticsearch-utils/</url>
 	</ciManagement>
 
 	<scm>
-		<connection>scm:git:git@github.com:AtlasOfLivingAustralia/ala-elasticsearch-reindex.git</connection>
-		<url>https://github.com/AtlasOfLivingAustralia/ala-elasticsearch-reindex</url>
-		<developerConnection>scm:git:git@github.com:AtlasOfLivingAustralia/ala-elasticsearch-reindex.git</developerConnection>
+		<connection>scm:git:git@github.com:AtlasOfLivingAustralia/ala-elasticsearch-utils.git</connection>
+		<url>https://github.com/AtlasOfLivingAustralia/ala-elasticsearch-utils</url>
+		<developerConnection>scm:git:git@github.com:AtlasOfLivingAustralia/ala-elasticsearch-utils.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 
@@ -80,7 +80,6 @@
 				<version>${slf4j.version}</version>
 				<scope>runtime</scope>
 			</dependency>
-
 		</dependencies>
 	</dependencyManagement>
 
