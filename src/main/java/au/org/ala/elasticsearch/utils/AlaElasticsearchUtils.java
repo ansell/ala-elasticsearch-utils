@@ -5,9 +5,12 @@ package au.org.ala.elasticsearch.utils;
 
 import java.io.IOException;
 
+import org.apache.http.HttpHost;
 import org.elasticsearch.action.admin.cluster.node.tasks.list.ListTasksRequest;
 import org.elasticsearch.action.admin.cluster.node.tasks.list.ListTasksResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.tasks.TaskSubmissionResponse;
 import org.elasticsearch.index.VersionType;
@@ -97,6 +100,31 @@ public class AlaElasticsearchUtils {
                 Thread.sleep(100);
             }
         }
+    }
+
+    /**
+     * @param esHostname
+     * @param esPort
+     * @param esScheme
+     * @return
+     */
+    public static RestHighLevelClient newElasticsearchClient(final String esHostname,
+            final int esPort, final String esScheme) {
+        RestHighLevelClient client = new RestHighLevelClient(
+                RestClient.builder(new HttpHost(esHostname, esPort, esScheme)));
+        return client;
+    }
+
+    /**
+     * @param client
+     * @param indexToDelete
+     * @throws IOException
+     */
+    public static void deleteIndex(RestHighLevelClient client, final String indexToDelete)
+            throws IOException {
+        DeleteIndexRequest deleteDestinationRequest = new DeleteIndexRequest(
+                indexToDelete);
+        client.indices().delete(deleteDestinationRequest, RequestOptions.DEFAULT);
     }
 
 }

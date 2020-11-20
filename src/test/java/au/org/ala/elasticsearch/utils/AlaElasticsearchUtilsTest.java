@@ -5,6 +5,7 @@ package au.org.ala.elasticsearch.utils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,13 +17,22 @@ import org.junit.jupiter.api.Test;
  * 
  * @author Peter Ansell p_ansell@yahoo.com
  */
-class AlaElasticsearchUtilsTest {
+public class AlaElasticsearchUtilsTest {
+
+    private static RestHighLevelClient testESClient;
+    private static String testSourceIndex = "example-source-index-utils-test";
+    private static String testDestinationIndex = "example-destination-index-utils-test";
 
     /**
      * @throws java.lang.Exception
      */
     @BeforeAll
     static void setUpBeforeClass() throws Exception {
+        String esHostname = "localhost";
+        int esPort = 9200;
+        String esScheme = "http";
+        testESClient = AlaElasticsearchUtils.newElasticsearchClient(esHostname, esPort, esScheme);
+
     }
 
     /**
@@ -30,6 +40,7 @@ class AlaElasticsearchUtilsTest {
      */
     @AfterAll
     static void tearDownAfterClass() throws Exception {
+        testESClient.close();
     }
 
     /**
@@ -37,6 +48,8 @@ class AlaElasticsearchUtilsTest {
      */
     @BeforeEach
     void setUp() throws Exception {
+        AlaElasticsearchTestUtils.deleteAndRecreateIndexes(testESClient, testSourceIndex,
+                testDestinationIndex);
     }
 
     /**
@@ -44,14 +57,20 @@ class AlaElasticsearchUtilsTest {
      */
     @AfterEach
     void tearDown() throws Exception {
+        try {
+            AlaElasticsearchUtils.deleteIndex(testESClient, testSourceIndex);
+        } finally {
+            AlaElasticsearchUtils.deleteIndex(testESClient, testDestinationIndex);
+        }
     }
 
     /**
-     * Test method for {@link au.org.ala.elasticsearch.utils.AlaElasticsearchUtils#asyncReindex(org.elasticsearch.client.RestHighLevelClient, java.lang.String, java.lang.String)}.
+     * Test method for
+     * {@link au.org.ala.elasticsearch.utils.AlaElasticsearchUtils#asyncReindex(org.elasticsearch.client.RestHighLevelClient, java.lang.String, java.lang.String)}.
      */
     @Test
-    final void testAsyncReindex() {
-        fail("Not yet implemented"); // TODO
+    final void testAsyncReindex() throws Exception {
+        AlaElasticsearchUtils.asyncReindex(testESClient, testSourceIndex, testDestinationIndex);
     }
 
 }
