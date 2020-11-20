@@ -32,6 +32,14 @@
 		<tag>HEAD</tag>
 	</scm>
 
+	<licenses>
+		<license>
+			<name>Mozilla Public License Version 1.1</name>
+			<url>http://www.mozilla.org/MPL/</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
 	<properties>
 		<jackson.version>2.11.0</jackson.version>
 		<junit.version>4.13</junit.version>
