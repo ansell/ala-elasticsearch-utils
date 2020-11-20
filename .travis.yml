@@ -10,7 +10,7 @@ jdk:
   - openjdk15
 branches:
   only:
-    - master
+    - main
     - develop
     - /^hotfix\/.*$/
 before_install:
