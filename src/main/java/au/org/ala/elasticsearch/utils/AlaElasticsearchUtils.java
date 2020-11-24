@@ -5,6 +5,7 @@ package au.org.ala.elasticsearch.utils;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -17,13 +18,19 @@ import org.elasticsearch.action.admin.cluster.node.tasks.list.ListTasksRequest;
 import org.elasticsearch.action.admin.cluster.node.tasks.list.ListTasksResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.support.ActiveShardCount;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.GetIndexTemplatesRequest;
+import org.elasticsearch.client.indices.GetIndexTemplatesResponse;
+import org.elasticsearch.client.indices.IndexTemplateMetadata;
+import org.elasticsearch.client.indices.PutIndexTemplateRequest;
 import org.elasticsearch.client.tasks.TaskSubmissionResponse;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.cluster.health.ClusterIndexHealth;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.VersionType;
 import org.elasticsearch.index.reindex.ReindexRequest;
 import org.elasticsearch.tasks.TaskInfo;
@@ -140,11 +147,12 @@ public class AlaElasticsearchUtils {
     /**
      * @param client
      * @param indexToDelete
-     * @return 
+     * @return
      * @throws IOException
-     * @throws InterruptedException 
+     * @throws InterruptedException
      */
-    public static Set<String> listIndexes(RestHighLevelClient client) throws IOException, InterruptedException {
+    public static Set<String> listIndexes(RestHighLevelClient client)
+            throws IOException, InterruptedException {
         int maxRetries = 6;
 
         ClusterHealthResponse response = getClusterStatus(client, maxRetries);
@@ -170,7 +178,8 @@ public class AlaElasticsearchUtils {
      * @param maxRetries
      * @return
      * @throws IOException
-     * @throws InterruptedException If the connection is interrupted
+     * @throws InterruptedException
+     *             If the connection is interrupted
      */
     public static ClusterHealthResponse getClusterStatus(RestHighLevelClient client, int maxRetries,
             String... indexNames) throws IOException, InterruptedException {
@@ -180,9 +189,9 @@ public class AlaElasticsearchUtils {
             ClusterHealthRequest request = new ClusterHealthRequest(indexNames);
             request.waitForStatus(ClusterHealthStatus.YELLOW);
             request.level(ClusterHealthRequest.Level.INDICES);
-            //request.waitForActiveShards(ActiveShardCount.ALL);
-            //request.timeout(TimeValue.timeValueSeconds(20));
-            //request.masterNodeTimeout(TimeValue.timeValueSeconds(10));
+            // request.waitForActiveShards(ActiveShardCount.ALL);
+            // request.timeout(TimeValue.timeValueSeconds(20));
+            // request.masterNodeTimeout(TimeValue.timeValueSeconds(10));
 
             ClusterHealthResponse nextResponse = client.cluster().health(request,
                     RequestOptions.DEFAULT);
@@ -211,7 +220,7 @@ public class AlaElasticsearchUtils {
      * @param indexName
      * @return
      * @throws IOException
-     * @throws InterruptedException 
+     * @throws InterruptedException
      */
     public static Map<String, ClusterIndexHealth> indexInfo(RestHighLevelClient client,
             String... indexNames) throws IOException, InterruptedException {
@@ -231,4 +240,31 @@ public class AlaElasticsearchUtils {
         return indices;
     }
 
+    public static void putTemplate(RestHighLevelClient client, String templateName,
+            String templateContentJson) throws IOException, InterruptedException {
+        // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.10/java-rest-high-get-templates.html
+        GetIndexTemplatesRequest getRequest = new GetIndexTemplatesRequest(templateName);
+
+        GetIndexTemplatesResponse getTemplatesResponse = client.indices()
+                .getIndexTemplate(getRequest, RequestOptions.DEFAULT);
+
+        List<IndexTemplateMetadata> indexTemplates = getTemplatesResponse.getIndexTemplates();
+        System.out.println(
+                "Found " + indexTemplates.size() + " existing templates matching " + templateName);
+        for (IndexTemplateMetadata nextIndexTemplate : indexTemplates) {
+            System.out.println("Found existing index template named: " + nextIndexTemplate.name());
+        }
+
+        PutIndexTemplateRequest putRequest = new PutIndexTemplateRequest(templateName);
+        putRequest.source(templateContentJson, XContentType.JSON);
+
+        AcknowledgedResponse putTemplateResponse = client.indices().putTemplate(putRequest,
+                RequestOptions.DEFAULT);
+
+        if (putTemplateResponse.isAcknowledged()) {
+            System.out.println("Put template request was acknowledged");
+        } else {
+            System.out.println("Put template request was not acknowledged");
+        }
+    }
 }

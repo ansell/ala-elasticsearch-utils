@@ -6,6 +6,7 @@ package au.org.ala.elasticsearch.utils;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.elasticsearch.client.RestHighLevelClient;
+import org.graalvm.compiler.nodes.extended.GetClassNode;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,9 +21,15 @@ import org.junit.jupiter.api.Test;
 public class AlaElasticsearchUtilsTest {
 
     private static RestHighLevelClient testESClient;
-    private static String testSourceIndex = "example-source-index-utils-test";
-    private static String testDestinationIndex = "example-destination-index-utils-test";
 
+    private static String testSourceIndex = "example-source-index-utils-test";
+    private static String testSourceIndexTemplate = "au.org.ala.elasticsearch.utils.test.index-template-source-1.json";
+    private static String testSourceIndexTemplateJSON;
+    
+    private static String testDestinationIndex = "example-destination-index-utils-test";
+    private static String testDestinationIndexTemplate = "au.org.ala.elasticsearch.utils.test.index-template-destination-1.json";
+    private static String testDestinationIndexTemplateJSON;
+    
     /**
      * @throws java.lang.Exception
      */
@@ -33,6 +40,7 @@ public class AlaElasticsearchUtilsTest {
         String esScheme = "http";
         testESClient = AlaElasticsearchUtils.newElasticsearchClient(esHostname, esPort, esScheme);
 
+        testSourceIndexTemplateJSON = AlaElasticsearchUtils.class.getResourceAsStream(testSourceIndexTemplate);
     }
 
     /**
@@ -48,14 +56,20 @@ public class AlaElasticsearchUtilsTest {
      */
     @BeforeEach
     void setUp() throws Exception {
+        AlaElasticsearchUtils.putTemplate(testESClient, testSourceIndex,
+                testSourceIndexTemplateJSON);
+        AlaElasticsearchUtils.putTemplate(testESClient, testDestinationIndex,
+                testDestinationIndexTemplateJSON);
+
         AlaElasticsearchTestUtils.deleteAndRecreateIndexes(testESClient, testSourceIndex,
                 testDestinationIndex);
 
-        //Thread.sleep(10000);
+        // Thread.sleep(10000);
 
         AlaElasticsearchUtils.listIndexes(testESClient);
-        
+
         AlaElasticsearchUtils.indexInfo(testESClient, testSourceIndex);
+        AlaElasticsearchUtils.indexInfo(testESClient, testDestinationIndex);
     }
 
     /**
@@ -76,7 +90,9 @@ public class AlaElasticsearchUtilsTest {
      */
     @Test
     final void testAsyncReindex() throws Exception {
-        AlaElasticsearchUtils.asyncReindex(testESClient, testSourceIndex, testDestinationIndex);
+        String reindexTaskId = AlaElasticsearchUtils.asyncReindex(testESClient, testSourceIndex,
+                testDestinationIndex);
+        AlaElasticsearchUtils.waitForTask(testESClient, reindexTaskId);
     }
 
 }
