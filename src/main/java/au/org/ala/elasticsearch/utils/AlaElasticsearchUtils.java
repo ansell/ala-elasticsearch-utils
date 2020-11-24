@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.http.HttpHost;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.cluster.node.tasks.list.ListTasksRequest;
@@ -242,17 +243,22 @@ public class AlaElasticsearchUtils {
 
     public static void putTemplate(RestHighLevelClient client, String templateName,
             String templateContentJson) throws IOException, InterruptedException {
-        // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.10/java-rest-high-get-templates.html
-        GetIndexTemplatesRequest getRequest = new GetIndexTemplatesRequest(templateName);
+        try {
+            // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.10/java-rest-high-get-templates.html
+            GetIndexTemplatesRequest getRequest = new GetIndexTemplatesRequest(templateName);
 
-        GetIndexTemplatesResponse getTemplatesResponse = client.indices()
-                .getIndexTemplate(getRequest, RequestOptions.DEFAULT);
+            GetIndexTemplatesResponse getTemplatesResponse = client.indices()
+                    .getIndexTemplate(getRequest, RequestOptions.DEFAULT);
 
-        List<IndexTemplateMetadata> indexTemplates = getTemplatesResponse.getIndexTemplates();
-        System.out.println(
-                "Found " + indexTemplates.size() + " existing templates matching " + templateName);
-        for (IndexTemplateMetadata nextIndexTemplate : indexTemplates) {
-            System.out.println("Found existing index template named: " + nextIndexTemplate.name());
+            List<IndexTemplateMetadata> indexTemplates = getTemplatesResponse.getIndexTemplates();
+            System.out.println("Found " + indexTemplates.size() + " existing templates matching "
+                    + templateName);
+            for (IndexTemplateMetadata nextIndexTemplate : indexTemplates) {
+                System.out.println(
+                        "Found existing index template named: " + nextIndexTemplate.name());
+            }
+        } catch (IOException | ElasticsearchStatusException e) {
+            System.out.println("Did not find an existing template for: " + templateName);
         }
 
         PutIndexTemplateRequest putRequest = new PutIndexTemplateRequest(templateName);
