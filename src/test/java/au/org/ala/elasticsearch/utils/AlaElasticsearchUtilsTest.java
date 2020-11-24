@@ -50,6 +50,12 @@ public class AlaElasticsearchUtilsTest {
     void setUp() throws Exception {
         AlaElasticsearchTestUtils.deleteAndRecreateIndexes(testESClient, testSourceIndex,
                 testDestinationIndex);
+
+        //Thread.sleep(10000);
+
+        AlaElasticsearchUtils.listIndexes(testESClient);
+        
+        AlaElasticsearchUtils.indexInfo(testESClient, testSourceIndex);
     }
 
     /**

@@ -49,8 +49,8 @@ class AlaElasticsearchTestUtils {
         // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.10/java-rest-high-create-index.html
         CreateIndexRequest createSourceRequest = new CreateIndexRequest(sourceIndex);
 
-        createSourceRequest.settings(Settings.builder().put("index.number_of_shards", 3)
-                .put("index.number_of_replicas", 2));
+        createSourceRequest.settings(Settings.builder().put("index.number_of_shards", 1)
+                .put("index.number_of_replicas", 1));
 
         createSourceRequest.mapping(
                 "{\"properties\": { \"message\": { \"type\": \"text\" }, \"postDate\": { \"type\": \"text\" } } }",
@@ -67,8 +67,8 @@ class AlaElasticsearchTestUtils {
         // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.10/java-rest-high-create-index.html
         CreateIndexRequest createDestinationRequest = new CreateIndexRequest(destinationIndex);
 
-        createDestinationRequest.settings(Settings.builder().put("index.number_of_shards", 3)
-                .put("index.number_of_replicas", 2));
+        createDestinationRequest.settings(Settings.builder().put("index.number_of_shards", 1)
+                .put("index.number_of_replicas", 1));
 
         // Example: Change the postDate type to date
         createDestinationRequest.mapping(
